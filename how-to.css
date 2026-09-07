@@ -10,6 +10,10 @@ body {
 	line-height: 1.6;
 }
 
+.about-page {
+	position: relative;
+}
+
 .how-to-header {
 	background: linear-gradient(135deg, #e63e2c 0%, #ff7708 50%, #ffbe92 100%);
 	padding: 2rem 1.5rem;
@@ -87,6 +91,62 @@ strong {
 	font-size: 0.95rem;
 }
 
+.about-horse {
+	bottom: -25rem;
+	height: auto;
+	max-width: 160px;
+	position: absolute;
+	width: 16vw;
+	z-index: 2;
+}
+
+.about-horse-left {
+	left: 1rem;
+}
+
+.about-horse-right {
+	right: 1.5rem;
+}
+
+.about-horse-right-upper {
+	bottom: -22rem;
+	right: 4.5rem;
+	transform: scaleX(-1) scale(1.05);
+}
+
+.about-horse-right-lower {
+	bottom: -40rem;
+	right: 7rem;
+	transform: scaleX(-1) scale(0.9);
+}
+
+.trans-flag {
+	position: absolute;
+	font-size: 2rem;
+	line-height: 1;
+	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.18));
+	z-index: 3;
+	user-select: none;
+}
+
+.trans-flag-left-top {
+	left: 12rem;
+	bottom: -37rem;
+	transform: rotate(-8deg);
+}
+
+.trans-flag-left-bottom {
+	left: 8rem;
+	bottom: -8rem;
+	transform: rotate(10deg);
+}
+
+.trans-flag-right-top {
+	right: 11rem;
+	bottom: -27rem;
+	transform: rotate(12deg);
+}
+
 @media (max-width: 768px) {
 	.how-to-header h1 {
 		font-size: 1.8rem;
@@ -98,6 +158,40 @@ strong {
 
 	section h2 {
 		font-size: 1.25rem;
+	}
+
+	.about-horse {
+		max-width: 110px;
+		width: 22vw;
+	}
+
+	.about-horse-right-upper {
+		right: 1rem;
+		bottom: -18rem;
+	}
+
+	.about-horse-right-lower {
+		right: 4rem;
+		bottom: -22rem;
+	}
+
+	.trans-flag {
+		font-size: 1.5rem;
+	}
+
+	.trans-flag-left-top {
+		left: 6.5rem;
+		top: 7rem;
+	}
+
+	.trans-flag-left-bottom {
+		left: 3.5rem;
+		bottom: 6rem;
+	}
+
+	.trans-flag-right-top {
+		right: 5.5rem;
+		top: 7rem;
 	}
 }
 

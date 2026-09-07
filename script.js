@@ -1,141 +1,101 @@
-document.addEventListener('DOMContentLoaded', () => {
-	console.log('tigerspend++ loaded');
+const fileInput = document.querySelector("#file-input");
+const fileList = document.querySelector("#file-list");
+const emptyState = document.querySelector("#empty-state");
+const addFilesButton = document.querySelector("#add-files");
+const startDate = document.querySelector("#start-date");
+const semesterEndDate = document.querySelector("#semester-end-date");
+const endGoal = document.querySelector("#end-goal");
+const endGoalValue = document.querySelector("#end-goal-value");
+const loadChartsButton = document.querySelector("#load-charts");
+const chartGrid = document.querySelector("#overview .chart-grid");
 
-	const uploadText = document.getElementById('uploadText');
-	const csvInput = document.getElementById('csvInput');
-	const fileListContainer = document.getElementById('fileListContainer');
-	const fileList = document.getElementById('fileList');
-	const viewStatsContainer = document.getElementById('viewStatsContainer');
-	const uploadAnotherBtn = document.getElementById('uploadAnotherBtn');
-	const viewStatsBtn = document.getElementById('viewStatsBtn');
-	const singleFileWarning = document.getElementById('singleFileWarning');
+let uploadedFiles = [];
 
-	// maintain a list of files to upload
-	let fileQueue = [];
+startDate.value = `${new Date().getFullYear()}-08-20`;
+semesterEndDate.value = `${new Date().getFullYear()}-12-10`;
 
-	// render the file list UI
-	function renderFileList() {
-		fileList.innerHTML = '';
-		if (fileQueue.length === 0) {
-			fileListContainer.style.display = 'none';
-			viewStatsContainer.style.display = 'none';
-			singleFileWarning.style.display = 'none';
-			return;
-		}
+endGoal.addEventListener("input", () => {
+  endGoalValue.textContent = `$${Number(endGoal.value).toLocaleString()}`;
+  updateEndGoalTrack();
+});
 
-		fileListContainer.style.display = 'block';
-		viewStatsContainer.style.display = 'block';
-		
-		// show warning if only one file uploaded
-		if (fileQueue.length === 1) {
-			singleFileWarning.style.display = 'block';
-		} else {
-			singleFileWarning.style.display = 'none';
-		}
+function updateEndGoalTrack() {
+  const progress = ((endGoal.value - endGoal.min) / (endGoal.max - endGoal.min)) * 100;
+  endGoal.style.setProperty("--range-progress", `${progress}%`);
+}
 
-		fileQueue.forEach((file, index) => {
-			const item = document.createElement('div');
-			item.className = 'file-list-item';
-			item.innerHTML = `
-				<span class="file-name">${file.name}</span>
-				<button class="remove-file-btn" data-index="${index}">Remove</button>
-			`;
-			fileList.appendChild(item);
-		});
+updateEndGoalTrack();
 
-		// attach remove event listeners
-		document.querySelectorAll('.remove-file-btn').forEach(btn => {
-			btn.addEventListener('click', (e) => {
-				const index = parseInt(e.target.dataset.index, 10);
-				fileQueue.splice(index, 1);
-				renderFileList();
-			});
-		});
-	}
+loadChartsButton.addEventListener("click", () => {
+  chartGrid.classList.add("charts-loaded");
+  processCsvFiles(uploadedFiles, startDate.value, semesterEndDate.value, Number(endGoal.value));
+});
 
-	// combine all files in queue into a single CSV text
-	function combineFiles() {
-		return new Promise((resolve) => {
-			let combinedText = '';
-			let filesProcessed = 0;
+function formatFileSize(bytes) {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
 
-			fileQueue.forEach((file, index) => {
-				const reader = new FileReader();
-				reader.onload = (ev) => {
-					const text = ev.target.result;
-					// skip header for subsequent files
-					if (index > 0) {
-						const lines = text.split(/\r?\n/);
-						combinedText += '\n' + lines.slice(1).join('\n');
-					} else {
-						combinedText = text;
-					}
-					filesProcessed++;
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
 
-					if (filesProcessed === fileQueue.length) {
-						resolve(combinedText);
-					}
-				};
-				reader.readAsText(file);
-			});
-		});
-	}
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
-	if (uploadText && csvInput) {
-		uploadText.addEventListener('click', () => csvInput.click());
+function renderFileList() {
+  fileList.replaceChildren();
+  emptyState.hidden = uploadedFiles.length > 0;
 
-		csvInput.addEventListener('change', (e) => {
-			const files = e.target.files;
-			if (!files || files.length === 0) return;
+  uploadedFiles.forEach((file, index) => {
+    const listItem = document.createElement("li");
+    listItem.className = "file-item";
 
-			// add new files to queue
-			fileQueue.push(...Array.from(files));
-			renderFileList();
+    const fileDetails = document.createElement("div");
+    fileDetails.className = "file-details";
 
-			// reset input so the same file can be selected again
-			csvInput.value = '';
-		});
-	}
+    const fileName = document.createElement("span");
+    fileName.className = "file-name";
+    fileName.textContent = file.name;
+    fileName.title = file.name;
 
-	// handle Upload Another button click
-	if (uploadAnotherBtn) {
-		uploadAnotherBtn.addEventListener('click', () => csvInput.click());
-	}
+    const fileSize = document.createElement("span");
+    fileSize.className = "file-size";
+    fileSize.textContent = formatFileSize(file.size);
 
-	// handle View Statistics button click
-	if (viewStatsBtn) {
-		viewStatsBtn.addEventListener('click', async () => {
-			// combine all files
-			const combinedText = await combineFiles();
+    const removeButton = document.createElement("button");
+    removeButton.className = "remove-file";
+    removeButton.type = "button";
+    removeButton.textContent = "Remove";
+    removeButton.setAttribute("aria-label", `Remove ${file.name}`);
+    removeButton.addEventListener("click", () => {
+      uploadedFiles.splice(index, 1);
+      renderFileList();
+    });
 
-			// expose for other scripts
-			window.uploadedCSVFiles = fileQueue;
-			window.uploadedCSVText = combinedText;
+    fileDetails.append(fileName, fileSize);
+    listItem.append(fileDetails, removeButton);
+    fileList.append(listItem);
+  });
+}
 
-			try {
-				sessionStorage.setItem('uploadedCSVText', combinedText);
-			} catch (err) {
-				console.warn('Could not save CSV to sessionStorage:', err);
-			}
+addFilesButton.addEventListener("click", () => {
+  fileInput.click();
+});
 
-			// also remember how many files were combined so the stats page can report it
-			try {
-				sessionStorage.setItem('uploadedCSVFileCount', String(fileQueue.length));
-			} catch (err) {
-				console.warn('Could not save uploadedCSVFileCount to sessionStorage:', err);
-			}
+fileInput.addEventListener("change", () => {
+  const newFiles = Array.from(fileInput.files).filter((file) => {
+    const isCsv = file.name.toLowerCase().endsWith(".csv");
+    const isDuplicate = uploadedFiles.some((uploadedFile) => {
+      return uploadedFile.name === file.name
+        && uploadedFile.size === file.size
+        && uploadedFile.lastModified === file.lastModified;
+    });
 
-			// dispatch event
-			const event = new CustomEvent('csv:loaded', { detail: { files: fileQueue, text: combinedText } });
-			window.dispatchEvent(event);
-			console.log('CSV loaded, bytes:', combinedText.length);
+    return isCsv && !isDuplicate;
+  });
 
-			// navigate
-			try {
-				window.location.href = 'dining.html';
-			} catch (err) {
-				console.warn('Navigation to dining.html failed:', err);
-			}
-		});
-	}
+  uploadedFiles = [...uploadedFiles, ...newFiles];
+  fileInput.value = "";
+  renderFileList();
 });

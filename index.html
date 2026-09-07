@@ -1,30 +1,84 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="description" content="TigerSpend++ is a great way to track your dining dollars with ease! built for RIT students by an RIT student.">
-	<meta name="viewport" content="width=device-width,initial-scale=1">
-	<title>TigerSpend++ | Currently Down for Rennovations</title>
-	<link rel="stylesheet" href="styles.css">
-	<link rel="icon" href="resources/favicon.svg" type="image/ico"/>
-  <link rel="shortcut icon" href="resources/favicon.svg" type="image/x-icon"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TigerSpend++</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="resources/favicon.svg" type="image/svg+xml">
 </head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-0B3XE5MMCZ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-0B3XE5MMCZ');
-</script>
 <body>
-	<main class="maintenance-page">
-		<div class="maintenance-panel">
-			<div class="maintenance-eyebrow">TigerSpend++</div>
-			<h1>Currently down for renovations.</h1>
-			<p class="maintenance-status">We're sorry for the inconvenience.</p>
-		</div>
-	</main>
+  <header class="topbar">
+    <div class="brand">TigerSpend++</div>
+    <div class="topbar-actions">
+      <button class="frutiger-aero-button topbar-action" type="button" onclick="window.location.href='how-to.html'">Help</button>
+      <button class="frutiger-aero-button topbar-action" type="button" onclick="window.location.href='feedback.html'">Feedback</button>
+      <button class="frutiger-aero-button topbar-action" type="button" onclick="window.location.href='about.html'">About</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" aria-label="File uploads">
+        <div class="uploads-panel">
+            <div class="uploads-header">
+            <h2>UPLOADS</h2>
+            <button class="frutiger-aero-button" id="add-files" type="button"> Add Files </button>
+            <input id="file-input" type="file" accept=".csv,text/csv" multiple hidden>
+            </div>
+            <p class="empty-state" id="empty-state">No files uploaded yet.</p>
+            <ul class="file-list" id="file-list"></ul>
+        </div>
+        <div class="dates-panel">
+            <h2>DATES</h2>
+            <div class="date-fields">
+            <label for="start-date">Start date</label>
+            <input id="start-date" type="date">
+            <label for="semester-end-date">Semester end date</label>
+            <input id="semester-end-date" type="date">
+            </div>
+        </div>
+          <div class="end-goal-panel">
+            <div class="end-goal-header">
+              <h2>END GOAL</h2>
+              <output id="end-goal-value" for="end-goal">$0</output>
+            </div>
+            <label class="sr-only" for="end-goal">Dining dollars to end with</label>
+            <input id="end-goal" type="range" min="0" max="1000" value="0" step="10">
+          </div>
+          <button class="frutiger-aero-button large load-charts" id="load-charts" type="button">Load Charts</button>
+    </aside>
+
+    <main class="main" id="overview">
+      <section class="chart-grid" aria-label="Chart placeholders">
+        <div class="chart-placeholder chart-with-header">
+          <h2>Visits</h2>
+          <div class="visits-chart"></div>
+        </div>
+        <div class="chart-placeholder chart-with-header">
+          <h2>Spending</h2>
+          <div class="spend-chart"></div>
+        </div>
+        <div class="chart-placeholder chart-with-header">
+          <h2>Balance over time</h2>
+          <div class="balance-chart"></div>
+        </div>
+        <div class="chart-placeholder statistics-coming-soon">
+          <p><strong>🚧 more statistics coming soon 🚧</strong><br>reach out for suggestions and feedback! use the <a href="feedback.html">feedback page</a> or email <a href="mailto:tigerspendplusplus@gmail.com">tigerspendplusplus@gmail.com</a></p>
+        </div>
+        <div class="chart-placeholder"></div>
+        <div class="chart-placeholder"></div>
+        <div class="chart-placeholder"></div>
+        <div class="chart-placeholder"></div>
+        <div class="chart-placeholder"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="version-badge" aria-label="Application version">v3.0.0</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+  <script src="graph_generation.js"></script>
+  <script src="csv_parsing.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
