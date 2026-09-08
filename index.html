@@ -101,7 +101,18 @@
     </main>
   </div>
 
-  <div class="version-badge" aria-label="Application version">v3.1.0</div>
+  <div class="version-badge" aria-label="Application version">v3.2.0</div>
+
+  <dialog class="welcome-modal" id="welcome-modal" aria-labelledby="welcome-title">
+    <div class="welcome-modal-content">
+      <h2 id="welcome-title">Welcome to TigerSpend++</h2>
+      <p>Upload your dining CSV to see your spending patterns and plan the rest of your semester.</p>
+      <div class="welcome-modal-actions">
+        <button class="frutiger-aero-button" id="dismiss-welcome" type="button">Get started</button>
+        <button class="frutiger-aero-button" id="open-help" type="button">User guide</button>
+      </div>
+    </div>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
   <script src="graph_generation.js"></script>

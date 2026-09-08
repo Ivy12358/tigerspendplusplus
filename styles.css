@@ -97,6 +97,49 @@ body {
   z-index: 20;
 }
 
+.welcome-modal {
+  background: linear-gradient(180deg, #ffeac5 0%, #ee9d64 80%, #ffd39c 100%);
+  border: 0;
+  border-radius: 14px;
+  box-shadow: inset 0 -8px 14px rgba(92, 92, 92, 0.16), 0 12px 34px rgba(52, 25, 8, 0.35);
+  color: var(--panel-ink);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  max-width: min(460px, calc(100% - 32px));
+  padding: 12px;
+  width: 100%;
+}
+
+.welcome-modal::backdrop {
+  background: rgba(24, 34, 53, 0.48);
+}
+
+.welcome-modal-content {
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid rgba(145, 145, 145, 0.72);
+  border-radius: 11px;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.8), inset 0 -4px 10px rgba(92, 92, 92, 0.1);
+  padding: 24px;
+  text-align: center;
+}
+
+.welcome-modal h2 {
+  color: var(--panel-ink);
+  margin: 0;
+}
+
+.welcome-modal p {
+  color: var(--panel-ink);
+  line-height: 1.5;
+  margin: 12px 0 20px;
+}
+
+.welcome-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
 .layout {
   bottom: 0;
   display: flex;

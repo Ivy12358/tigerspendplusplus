@@ -15,6 +15,23 @@ const balanceProgress = document.querySelector("#balance-progress");
 const balanceProgressValue = document.querySelector("#balance-progress-value");
 const dailyBudgetValue = document.querySelector("#daily-budget-value");
 const twoWeekSpendingValue = document.querySelector("#two-week-spending-value");
+const welcomeModal = document.querySelector("#welcome-modal");
+const dismissWelcomeButton = document.querySelector("#dismiss-welcome");
+const openHelpButton = document.querySelector("#open-help");
+
+if (!localStorage.getItem("tigerspend-welcome-seen")) {
+  welcomeModal.showModal();
+}
+
+dismissWelcomeButton.addEventListener("click", () => {
+  localStorage.setItem("tigerspend-welcome-seen", "true");
+  welcomeModal.close();
+});
+
+openHelpButton.addEventListener("click", () => {
+  localStorage.setItem("tigerspend-welcome-seen", "true");
+  window.location.href = "how-to.html";
+});
 
 let uploadedFiles = [];
 
