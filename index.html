@@ -25,6 +25,7 @@
             <button class="frutiger-aero-button" id="add-files" type="button"> Add Files </button>
             <input id="file-input" type="file" accept=".csv,text/csv" multiple hidden>
             </div>
+            <p class="drop-hint">Drag and drop CSV files here</p>
             <p class="empty-state" id="empty-state">No files uploaded yet.</p>
             <ul class="file-list" id="file-list"></ul>
         </div>
@@ -59,11 +60,35 @@
           <div class="spend-chart"></div>
         </div>
         <div class="chart-placeholder chart-with-header">
-          <h2>Balance over time</h2>
+          <h2>Balance Over Time</h2>
           <div class="balance-chart"></div>
         </div>
-        <div class="chart-placeholder statistics-coming-soon">
-          <p><strong>🚧 more statistics coming soon 🚧</strong><br>reach out for suggestions and feedback! use the <a href="feedback.html">feedback page</a> or email <a href="mailto:tigerspendplusplus@gmail.com">tigerspendplusplus@gmail.com</a></p>
+        <div class="chart-placeholder progress-summary">
+          <h2>Spending Breakdown</h2>
+          <div class="progress-metric">
+            <div class="progress-label">
+              <span>Term completed</span>
+              <output id="term-progress-value">0%</output>
+            </div>
+            <progress id="term-progress" max="100" value="0">0%</progress>
+          </div>
+          <div class="progress-metric">
+            <div class="progress-label">
+              <span>Dining dollars spent</span>
+              <output id="balance-progress-value">Add CSV files</output>
+            </div>
+            <progress id="balance-progress" max="100" value="0">0%</progress>
+          </div>
+          <div class="spending-stats">
+            <div class="daily-budget">
+              <span>Daily budget to reach goal</span>
+              <output id="daily-budget-value">Add CSV files</output>
+            </div>
+            <div class="daily-budget">
+              <span>Average spending last 2 weeks</span>
+              <output id="two-week-spending-value">Add CSV files</output>
+            </div>
+          </div>
         </div>
         <div class="chart-placeholder"></div>
         <div class="chart-placeholder"></div>

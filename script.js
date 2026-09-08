@@ -1,6 +1,7 @@
 const fileInput = document.querySelector("#file-input");
 const fileList = document.querySelector("#file-list");
 const emptyState = document.querySelector("#empty-state");
+const uploadsPanel = document.querySelector(".uploads-panel");
 const addFilesButton = document.querySelector("#add-files");
 const startDate = document.querySelector("#start-date");
 const semesterEndDate = document.querySelector("#semester-end-date");
@@ -8,6 +9,12 @@ const endGoal = document.querySelector("#end-goal");
 const endGoalValue = document.querySelector("#end-goal-value");
 const loadChartsButton = document.querySelector("#load-charts");
 const chartGrid = document.querySelector("#overview .chart-grid");
+const termProgress = document.querySelector("#term-progress");
+const termProgressValue = document.querySelector("#term-progress-value");
+const balanceProgress = document.querySelector("#balance-progress");
+const balanceProgressValue = document.querySelector("#balance-progress-value");
+const dailyBudgetValue = document.querySelector("#daily-budget-value");
+const twoWeekSpendingValue = document.querySelector("#two-week-spending-value");
 
 let uploadedFiles = [];
 
@@ -28,8 +35,66 @@ updateEndGoalTrack();
 
 loadChartsButton.addEventListener("click", () => {
   chartGrid.classList.add("charts-loaded");
+  renderProgressSummary();
   processCsvFiles(uploadedFiles, startDate.value, semesterEndDate.value, Number(endGoal.value));
 });
+
+function dateFromInput(dateString) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateString)
+    ? new Date(`${dateString}T00:00:00`)
+    : null;
+}
+
+function getDaysLeft(endDate) {
+  const today = new Date();
+  const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const difference = endDate - currentDate;
+  return Math.max(0, Math.floor(difference / (1000 * 60 * 60 * 24)) + 1);
+}
+
+function renderProgressSummary(balanceSummary) {
+  const selectedStartDate = dateFromInput(startDate.value);
+  const selectedEndDate = dateFromInput(semesterEndDate.value);
+
+  if (!selectedStartDate || !selectedEndDate || selectedEndDate <= selectedStartDate) {
+    return;
+  }
+
+  const now = new Date();
+  const termLength = selectedEndDate - selectedStartDate;
+  const termProgressPercent = Math.min(100, Math.max(0, ((now - selectedStartDate) / termLength) * 100));
+  const termProgressText = `${Math.round(termProgressPercent)}%`;
+
+  termProgress.value = termProgressPercent;
+  termProgressValue.textContent = termProgressText;
+
+  if (!balanceSummary) {
+    return;
+  }
+
+  const { currentBalance, initialBalance } = balanceSummary;
+  const balanceProgressPercent = initialBalance > 0
+    ? Math.min(100, Math.max(0, ((initialBalance - currentBalance) / initialBalance) * 100))
+    : 0;
+  const daysLeft = getDaysLeft(selectedEndDate);
+  const dailyBudget = daysLeft > 0
+    ? Math.max(0, (currentBalance - Number(endGoal.value)) / daysLeft)
+    : 0;
+
+  balanceProgress.value = balanceProgressPercent;
+  balanceProgressValue.textContent = `${Math.round(balanceProgressPercent)}% spent`;
+  dailyBudgetValue.textContent = `$${dailyBudget.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
+
+  if (balanceSummary.twoWeekAverage !== null) {
+    twoWeekSpendingValue.textContent = `$${balanceSummary.twoWeekAverage.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })} / day`;
+  }
+}
 
 function formatFileSize(bytes) {
   if (bytes < 1024) {
@@ -83,8 +148,8 @@ addFilesButton.addEventListener("click", () => {
   fileInput.click();
 });
 
-fileInput.addEventListener("change", () => {
-  const newFiles = Array.from(fileInput.files).filter((file) => {
+function addFiles(files) {
+  const newFiles = Array.from(files).filter((file) => {
     const isCsv = file.name.toLowerCase().endsWith(".csv");
     const isDuplicate = uploadedFiles.some((uploadedFile) => {
       return uploadedFile.name === file.name
@@ -96,6 +161,30 @@ fileInput.addEventListener("change", () => {
   });
 
   uploadedFiles = [...uploadedFiles, ...newFiles];
-  fileInput.value = "";
   renderFileList();
+}
+
+fileInput.addEventListener("change", () => {
+  addFiles(fileInput.files);
+  fileInput.value = "";
+});
+
+uploadsPanel.addEventListener("dragover", (event) => {
+  if (event.dataTransfer.types.includes("Files")) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    uploadsPanel.classList.add("drag-over");
+  }
+});
+
+uploadsPanel.addEventListener("dragleave", (event) => {
+  if (!uploadsPanel.contains(event.relatedTarget)) {
+    uploadsPanel.classList.remove("drag-over");
+  }
+});
+
+uploadsPanel.addEventListener("drop", (event) => {
+  event.preventDefault();
+  uploadsPanel.classList.remove("drag-over");
+  addFiles(event.dataTransfer.files);
 });

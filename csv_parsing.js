@@ -162,6 +162,62 @@ function balanceOverTimeByAccounts(accountFiles, requestedEndDate) {
 	return balanceHistory;
 }
 
+function getMostRecentCombinedBalance(accountFiles) {
+	const balances = {
+		main: [],
+		rollover: []
+	};
+
+	for (const accountFile of accountFiles) {
+		const accountName = accountFile.name.toLowerCase().includes("rollover")
+			? "rollover"
+			: "main";
+
+		for (const line of accountFile.rows) {
+			if (!Array.isArray(line) || typeof line[0] !== "string" || line.length < 4) {
+				continue;
+			}
+
+			const date = line[0].slice(0, 10);
+			const balance = Number(line[3]);
+
+			if (/^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(balance)) {
+				balances[accountName].push({ date, balance });
+			}
+		}
+	}
+
+	const latestBalances = Object.fromEntries(
+		Object.entries(balances).map(([accountName, entries]) => {
+			entries.sort((first, second) => first.date.localeCompare(second.date));
+			return [accountName, entries.at(-1)?.balance || 0];
+		})
+	);
+
+	const firstBalances = Object.fromEntries(
+		Object.entries(balances).map(([accountName, entries]) => [
+			accountName,
+			entries.sort((first, second) => first.date.localeCompare(second.date))[0]?.balance || 0
+		])
+	);
+
+	const balanceHistory = balanceOverTimeByAccounts(accountFiles);
+	const latestHistoryEntry = balanceHistory.at(-1);
+	let twoWeekAverage = null;
+
+	if (latestHistoryEntry && balanceHistory.length >= 15) {
+		const twoWeeksAgoBalance = balanceHistory.at(-15)[1];
+		const currentBalance = latestHistoryEntry[1];
+		twoWeekAverage = Math.max(0, (twoWeeksAgoBalance - currentBalance) / 14);
+	}
+
+	return {
+		currentBalance: latestBalances.main + latestBalances.rollover,
+		initialBalance: firstBalances.main + firstBalances.rollover,
+		twoWeekAverage
+	};
+}
+
 function prepareLocationVisitData(csvRows) {
 	const artesano = ["Artesano", 0];
 	const beanz = ["Beanz", 0];
@@ -332,6 +388,7 @@ async function processCsvFiles(csvFiles, selectedStartDate, selectedEndDate, end
 	const visits = prepareLocationVisitData(combinedRows);
 	const spend = PrepareLocationSpendData(combinedRows);
 	const balanceHistory = balanceOverTimeByAccounts(accountFiles, selectedEndDate);
+	const balanceSummary = getMostRecentCombinedBalance(accountFiles);
 
 	console.log("Visits from all uploaded files:", visits);
 	console.log("Spend from all uploaded files:", spend);
@@ -339,6 +396,7 @@ async function processCsvFiles(csvFiles, selectedStartDate, selectedEndDate, end
 	renderVisitsPieChart(visits);
 	renderSpendPieChart(spend);
 	renderBalanceOverTimeChart(balanceHistory, selectedStartDate, selectedEndDate, endGoalValue);
+	renderProgressSummary(balanceSummary);
 
 	return parsedFiles;
 }
