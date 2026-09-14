@@ -218,6 +218,74 @@ function getMostRecentCombinedBalance(accountFiles) {
 	};
 }
 
+function preparePurchaseTimeData(csvRows) {
+	const locationMatchers = [
+		["Artesano", "Artesano"],
+		["Beanz", "Beanz"],
+		["Ben & Jerrys", "Ben"],
+		["Bytes", "MICRO"],
+		["Croads", "Crossroads"],
+		["College Grind", "Grind"],
+		["Commons", "Commons"],
+		["Corner Store", "Corner"],
+		["Ctrl Alt Deli", "Ctrl"],
+		["Brick City", "Brick"],
+		["Loaded Latke", "Loaded"],
+		["GV Market", "Market"],
+		["Midnight Oil", "Midnight"],
+		["Nathan's", "Nathan"],
+		["Patio", "Cantina"],
+		["Petals", "Petals"],
+		["RITZ", "RITZ"],
+		["VendDrinks", "BEVERAGE"],
+		["VendSnacks", "SNACK"]
+	];
+	const purchasesByHour = Array.from({ length: 24 }, (_, hour) => [
+		hour,
+		Object.fromEntries(locationMatchers.map(([location]) => [location, 0]))
+	]);
+
+	for (const line of csvRows) {
+		if (!Array.isArray(line) || typeof line[0] !== "string" || typeof line[1] !== "string") {
+			continue;
+		}
+
+		const timeMatch = line[0].match(/(?:T|\s)(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
+
+		if (!timeMatch) {
+			continue;
+		}
+
+		let hour = Number(timeMatch[1]);
+		const meridiem = timeMatch[3]?.toUpperCase();
+
+		if (meridiem) {
+			if (hour === 12) {
+				hour = 0;
+			}
+			if (meridiem === "PM") {
+				hour += 12;
+			}
+		}
+
+		if (hour >= 0 && hour < 24) {
+			const location = locationMatchers.find(([, matcher]) => line[1].includes(matcher))?.[0];
+
+			if (location) {
+				purchasesByHour[hour][1][location] += 1;
+			}
+		}
+	}
+
+	return purchasesByHour.map(([hour, purchasesByLocation]) => [
+		new Date(2000, 0, 1, hour).toLocaleTimeString([], {
+			hour: "numeric",
+			hour12: true
+		}),
+		purchasesByLocation
+	]);
+}
+
 function prepareLocationVisitData(csvRows) {
 	const artesano = ["Artesano", 0];
 	const beanz = ["Beanz", 0];
@@ -387,14 +455,17 @@ async function processCsvFiles(csvFiles, selectedStartDate, selectedEndDate, end
 	const combinedRows = parsedFiles.flat();
 	const visits = prepareLocationVisitData(combinedRows);
 	const spend = PrepareLocationSpendData(combinedRows);
+	const purchaseTimeData = preparePurchaseTimeData(combinedRows);
 	const balanceHistory = balanceOverTimeByAccounts(accountFiles, selectedEndDate);
 	const balanceSummary = getMostRecentCombinedBalance(accountFiles);
 
 	console.log("Visits from all uploaded files:", visits);
 	console.log("Spend from all uploaded files:", spend);
+	console.log("Purchases by hour from all uploaded files:", purchaseTimeData);
 	console.log("Balance over time from all uploaded files:", balanceHistory);
 	renderVisitsPieChart(visits);
 	renderSpendPieChart(spend);
+	renderPurchaseTimeBarChart(purchaseTimeData);
 	renderBalanceOverTimeChart(balanceHistory, selectedStartDate, selectedEndDate, endGoalValue);
 	renderProgressSummary(balanceSummary);
 

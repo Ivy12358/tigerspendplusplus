@@ -1,6 +1,7 @@
 let visitsChart;
 let spendChart;
 let balanceChart;
+let purchaseTimeChart;
 
 function resizeVisitsChart() {
 	if (visitsChart) {
@@ -17,6 +18,12 @@ function resizeSpendChart() {
 function resizeBalanceChart() {
 	if (balanceChart) {
 		balanceChart.resize();
+	}
+}
+
+function resizePurchaseTimeChart() {
+	if (purchaseTimeChart) {
+		purchaseTimeChart.resize();
 	}
 }
 
@@ -177,6 +184,77 @@ function renderSpendPieChart(spend) {
 	});
 }
 
+function renderPurchaseTimeBarChart(purchaseTimeData) {
+	const chartElement = document.querySelector(".purchase-time-chart");
+
+	if (!chartElement || !Array.isArray(purchaseTimeData)) {
+		return;
+	}
+
+	if (purchaseTimeChart) {
+		purchaseTimeChart.dispose();
+	}
+
+	purchaseTimeChart = echarts.init(chartElement);
+	purchaseTimeChart.setOption({
+		animation: true,
+		animationDuration: 700,
+		grid: {
+			left: 48,
+			right: 18,
+			top: 16,
+			bottom: 56,
+			containLabel: true
+		},
+		tooltip: {
+			trigger: "axis",
+			axisPointer: {
+				type: "shadow"
+			},
+			formatter: (params) => {
+				const purchaseLines = params
+					.filter(({ value }) => value > 0)
+					.map(({ marker, seriesName, value }) => `${marker} ${seriesName}: ${value}`);
+
+				return `${params[0].axisValue}<br>${purchaseLines.join("<br>")}`;
+			}
+		},
+		xAxis: {
+			type: "category",
+			data: purchaseTimeData.map(([hour]) => hour),
+			axisLabel: {
+				interval: 0,
+				rotate: 45
+			}
+		},
+		yAxis: {
+			type: "value",
+			name: "Purchases",
+			nameLocation: "middle",
+			nameGap: 34,
+			minInterval: 1
+		},
+		legend: {
+			bottom: 4,
+			left: "center",
+			type: "scroll"
+		},
+		series: Object.keys(purchaseTimeData[0]?.[1] || {}).map((location, index) => ({
+			name: location,
+			type: "bar",
+			stack: "purchases",
+			data: purchaseTimeData.map(([, purchasesByLocation]) => purchasesByLocation[location]),
+			barMaxWidth: 24,
+			itemStyle: {
+				color: [
+					"#e66b0b", "#2f7f9f", "#d94f70", "#5f9e52", "#8c5a9e",
+					"#c58b2a", "#4e6fae", "#b75d3d", "#3d8b7d", "#9b6b43"
+				][index % 10]
+			}
+		}))
+	});
+}
+
 function renderBalanceOverTimeChart(balanceHistory, selectedStartDate, selectedEndDate, endGoalValue) {
 	const chartElement = document.querySelector(".balance-chart");
 
@@ -300,3 +378,4 @@ function renderBalanceOverTimeChart(balanceHistory, selectedStartDate, selectedE
 window.addEventListener("resize", resizeVisitsChart);
 window.addEventListener("resize", resizeSpendChart);
 window.addEventListener("resize", resizeBalanceChart);
+window.addEventListener("resize", resizePurchaseTimeChart);

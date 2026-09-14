@@ -543,7 +543,8 @@ body {
 
 .visits-chart,
 .spend-chart,
-.balance-chart {
+.balance-chart,
+.purchase-time-chart {
   flex: 1;
   min-height: 0;
   width: 100%;
