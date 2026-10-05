@@ -1,5 +1,7 @@
 let visitsChart;
 let spendChart;
+let mobileOrdersChart;
+let mobileLocationChart;
 let balanceChart;
 let purchaseTimeChart;
 
@@ -12,6 +14,18 @@ function resizeVisitsChart() {
 function resizeSpendChart() {
 	if (spendChart) {
 		spendChart.resize();
+	}
+}
+
+function resizeMobileOrdersChart() {
+	if (mobileOrdersChart) {
+		mobileOrdersChart.resize();
+	}
+}
+
+function resizeMobileLocationChart() {
+	if (mobileLocationChart) {
+		mobileLocationChart.resize();
 	}
 }
 
@@ -179,6 +193,113 @@ function renderSpendPieChart(spend) {
 						length2: 10
 					}
 				}))
+			}
+		]
+	});
+}
+
+function renderMobileOrdersPieChart(mobileOrders) {
+	const chartElement = document.querySelector(".mobile-orders-chart");
+
+	if (!chartElement || !Array.isArray(mobileOrders)) {
+		return;
+	}
+
+	if (mobileOrdersChart) {
+		mobileOrdersChart.dispose();
+	}
+
+	mobileOrdersChart = echarts.init(chartElement);
+	mobileOrdersChart.setOption({
+		animation: true,
+		animationDuration: 700,
+		tooltip: {
+			trigger: "item",
+			formatter: "{b}: {c} orders ({d}%)"
+		},
+		legend: {
+			bottom: 4,
+			left: "center"
+		},
+		series: [
+			{
+				name: "Orders",
+				type: "pie",
+				radius: ["28%", "58%"],
+				center: ["50%", "44%"],
+				itemStyle: {
+					borderColor: "#ffffff",
+					borderWidth: 2
+				},
+				label: {
+					show: false
+				},
+				data: mobileOrders.map(([name, orderCount], index) => ({
+					name,
+					value: orderCount,
+					itemStyle: {
+						color: ["#e66b0b", "#2f7f9f"][index % 2]
+					}
+				}))
+			}
+		]
+	});
+}
+
+function renderMobileLocationBarChart(mobileLocationData) {
+	const chartElement = document.querySelector(".mobile-location-chart");
+
+	if (!chartElement || !Array.isArray(mobileLocationData)) {
+		return;
+	}
+
+	if (mobileLocationChart) {
+		mobileLocationChart.dispose();
+	}
+
+	mobileLocationChart = echarts.init(chartElement);
+	mobileLocationChart.setOption({
+		animation: true,
+		animationDuration: 700,
+		grid: {
+			left: 48,
+			right: 18,
+			top: 20,
+			bottom: 70,
+			containLabel: true
+		},
+		tooltip: {
+			trigger: "axis",
+			axisPointer: {
+				type: "shadow"
+			},
+			formatter: ([{ axisValue, value }]) => `${axisValue}: ${value} mobile orders`
+		},
+		xAxis: {
+			type: "category",
+			data: mobileLocationData.map(([location]) => location),
+			axisLabel: {
+				interval: 0,
+				rotate: 45
+			}
+		},
+		yAxis: {
+			type: "value",
+			name: "Orders",
+			nameLocation: "middle",
+			nameGap: 34,
+			minInterval: 1
+		},
+		series: [
+			{
+				name: "Mobile orders",
+				type: "bar",
+				data: mobileLocationData.map(([, visitCount]) => visitCount),
+				barMaxWidth: 32,
+				itemStyle: {
+					color: "#e66b0b",
+					borderRadius: [4, 4, 0, 0]
+				}
 			}
 		]
 	});
@@ -377,5 +498,7 @@ function renderBalanceOverTimeChart(balanceHistory, selectedStartDate, selectedE
 
 window.addEventListener("resize", resizeVisitsChart);
 window.addEventListener("resize", resizeSpendChart);
+window.addEventListener("resize", resizeMobileOrdersChart);
+window.addEventListener("resize", resizeMobileLocationChart);
 window.addEventListener("resize", resizeBalanceChart);
 window.addEventListener("resize", resizePurchaseTimeChart);

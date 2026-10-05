@@ -543,6 +543,8 @@ body {
 
 .visits-chart,
 .spend-chart,
+.mobile-orders-chart,
+.mobile-location-chart,
 .balance-chart,
 .purchase-time-chart {
   flex: 1;

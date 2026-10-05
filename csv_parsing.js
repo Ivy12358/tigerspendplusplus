@@ -347,15 +347,47 @@ function prepareLocationVisitData(csvRows) {
 		if (line[1].includes("Market")) market[1] += 1;
 		if (line[1].includes("Midnight")) midnightOil[1] += 1;
 		if (line[1].includes("Nathan")) nathans[1] += 1;
-		if (line[1].includes("Cantina")) patio[1] += 1;
+		if (line[1].includes("Cantina") || line[1].includes("Patio")) patio[1] += 1;
 		if (line[1].includes("Petals")) petals[1] += 1;
 		if (line[1].includes("RITZ")) ritz[1] += 1;
-		if (line[1].includes("BEVERAGE")) vendDrinks[1] += 1;
+		if (line[1].includes("BEVERAGE") || line[1].includes("PICO")) vendDrinks[1] += 1;
 		if (line[1].includes("SNACK")) vendSnacks[1] += 1;
 	}
 
 	return locationVisitData;
 }
+
+function mobileSorting(csvRows) {
+	const mobileOrders = ["Mobile Orders", 0];
+	const nonMobileOrders = ["Non-Mobile Orders", 0];
+
+	for (const line of csvRows) {
+		if (!Array.isArray(line) || typeof line[1] !== "string") {
+			continue;
+		}
+
+		if (line[1].includes("OnDemand")) {
+			mobileOrders[1] += 1;
+		} else {
+			if (!(line[1].includes("Deposit") || line[1].includes("Funds"))) {
+				nonMobileOrders[1] += 1;
+			}
+		}
+	}
+
+	return [mobileOrders, nonMobileOrders];
+}
+
+function mobileLocationSorting(csvRows) {
+	const mobileRows = csvRows.filter((line) => {
+		return Array.isArray(line)
+			&& typeof line[1] === "string"
+			&& line[1].includes("OnDemand");
+	});
+
+	return prepareLocationVisitData(mobileRows);
+}
+
 
 function PrepareLocationSpendData(csvRows) {
 	const artesano = ["Artesano", 0];
@@ -454,17 +486,23 @@ async function processCsvFiles(csvFiles, selectedStartDate, selectedEndDate, end
 
 	const combinedRows = parsedFiles.flat();
 	const visits = prepareLocationVisitData(combinedRows);
+	const mobileOrders = mobileSorting(combinedRows);
+	const mobileLocationData = mobileLocationSorting(combinedRows);
 	const spend = PrepareLocationSpendData(combinedRows);
 	const purchaseTimeData = preparePurchaseTimeData(combinedRows);
 	const balanceHistory = balanceOverTimeByAccounts(accountFiles, selectedEndDate);
 	const balanceSummary = getMostRecentCombinedBalance(accountFiles);
 
 	console.log("Visits from all uploaded files:", visits);
+	console.log("Mobile and non-mobile orders from all uploaded files:", mobileOrders);
+	console.log("Mobile orders by location from all uploaded files:", mobileLocationData);
 	console.log("Spend from all uploaded files:", spend);
 	console.log("Purchases by hour from all uploaded files:", purchaseTimeData);
 	console.log("Balance over time from all uploaded files:", balanceHistory);
 	renderVisitsPieChart(visits);
 	renderSpendPieChart(spend);
+	renderMobileOrdersPieChart(mobileOrders);
+	renderMobileLocationBarChart(mobileLocationData);
 	renderPurchaseTimeBarChart(purchaseTimeData);
 	renderBalanceOverTimeChart(balanceHistory, selectedStartDate, selectedEndDate, endGoalValue);
 	renderProgressSummary(balanceSummary);
